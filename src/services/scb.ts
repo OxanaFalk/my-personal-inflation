@@ -161,10 +161,17 @@ class SCBService {
   }
 
   private parseCSV(csvText: string): CPIData[] {
+    console.log('=== CSV PARSING START ===');
+    console.log('CSV text length:', csvText.length);
+    console.log('CSV first 200 chars:', csvText.substring(0, 200));
+    
     const lines = csvText.trim().split('\n');
     const headers = lines[0].split(',');
     
-    return lines.slice(1).map(line => {
+    console.log('CSV headers:', headers);
+    console.log('CSV lines count:', lines.length);
+    
+    const result = lines.slice(1).map(line => {
       const values = line.split(',');
       const divisions: { [key: string]: number } = {};
       
@@ -185,6 +192,13 @@ class SCBService {
         divisions
       };
     });
+    
+    console.log('=== CSV PARSING RESULT ===');
+    console.log('Parsed data length:', result.length);
+    console.log('First parsed item:', result[0]);
+    console.log('=== CSV PARSING END ===');
+    
+    return result;
   }
 }
 
