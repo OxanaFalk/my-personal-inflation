@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -6,12 +7,11 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
+          <Link to="/">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Home
+            </Button>
           </Link>
           
           <div className="flex items-center gap-3 mb-6">
@@ -28,10 +28,10 @@ const About = () => {
             <p className="text-muted-foreground mb-4">
               Myflation uses official Consumer Price Index (CPI) data from Statistics Sweden (SCB), 
               specifically the COICOP classification with 2020 as the base year (2020=100). The data 
-              covers the last 12 months across all 12 main expenditure divisions.
+              covers the last 24 months across all 13 main expenditure divisions.
             </p>
             <p className="text-muted-foreground">
-              Data is fetched from SCB's PXWeb API (datasets: KPItotM for total CPI and KPICOI80MN for COICOP divisions) with a fallback to 
+              Data is fetched from SCB's PXWeb API (dataset: KPI2020COICOP2M) with a fallback to 
               embedded demo data if the API is unavailable.
             </p>
           </div>
@@ -39,7 +39,7 @@ const About = () => {
           <div className="bg-card p-6 rounded-xl shadow-soft border border-border mb-8">
             <h2 className="text-2xl font-semibold mb-4">Methodology</h2>
             <p className="text-muted-foreground mb-4">
-              Your personal CPI is calculated as a weighted sum of the 12 COICOP division indices 
+              Your personal CPI is calculated as a weighted sum of the 13 COICOP division indices 
               using your spending mix as weights:
             </p>
             <div className="bg-muted p-4 rounded-lg font-mono text-sm mb-4">
@@ -102,9 +102,13 @@ const About = () => {
                 <span className="font-medium">11</span>
                 <span className="text-muted-foreground">Restaurants and accommodation services</span>
               </div>
-              <div className="flex justify-between py-1">
+              <div className="flex justify-between py-1 border-b border-border/50">
                 <span className="font-medium">12</span>
                 <span className="text-muted-foreground">Insurance and financial services</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="font-medium">13</span>
+                <span className="text-muted-foreground">Personal care, social protection and miscellaneous</span>
               </div>
             </div>
           </div>
