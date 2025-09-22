@@ -25,12 +25,30 @@ export function calculatePersonalCPI(
   return cpiData.map(dataPoint => {
     // Calculate weighted personal inflation rate directly from the inflation data
     let personalYoY = 0;
+    console.log('Available divisions in data:', Object.keys(dataPoint.divisions));
+    console.log('Weight divisions:', Object.keys(decimalWeights));
+    
     Object.entries(decimalWeights).forEach(([division, weight]) => {
-      // Handle CSV format with "D" prefix (D01_Food vs 01_Food)
-      const cleanDivision = division.replace(/^0/, 'D0'); // Convert "01_Food" to "D01_Food"
-      const inflationRate = dataPoint.divisions[cleanDivision] || dataPoint.divisions[division] || 0;
+      // Map division keys to CSV headers
+      const divisionMapping: { [key: string]: string } = {
+        '01_Food': 'D01_Food',
+        '02_AlcoholTobacco': 'D02_AlcoholTobacco', 
+        '03_Clothing': 'D03_Clothing',
+        '04_Housing': 'D04_Housing',
+        '05_Furnishings': 'D05_Furnishings',
+        '06_Health': 'D06_Health',
+        '07_Transport': 'D07_Transport',
+        '08_Communication': 'D08_InfoComm',
+        '09_Recreation': 'D09_Recreation',
+        '10_Education': 'D10_Education',
+        '11_RestaurantsHotels': 'D11_Restaurants',
+        '12_Misc': 'D12_InsuranceFinance'
+      };
+      
+      const csvHeader = divisionMapping[division];
+      const inflationRate = dataPoint.divisions[csvHeader] || 0;
       personalYoY += weight * inflationRate;
-      console.log(`Division ${division} -> ${cleanDivision}: weight=${weight}, rate=${inflationRate}, contribution=${weight * inflationRate}`); // Debug log
+      console.log(`Division ${division} -> ${csvHeader}: weight=${weight}, rate=${inflationRate}, contribution=${weight * inflationRate}`);
     });
 
     // Swedish YoY is already provided in the CPI_All column as inflation rate
