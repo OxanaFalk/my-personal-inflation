@@ -99,18 +99,26 @@ export function calculatePersonalCPI(
     if (index === 0) {
       console.log(`${dataPoint.date}: Personal=${personalYoY.toFixed(2)}%, Swedish=${dataPoint.CPI_All}%`);
       
-      // Test calculation with Swedish average weights
+      // Test calculation with Swedish average weights - detailed breakdown
       let testPersonalYoY = 0;
+      console.log('🧪 TEST: Detailed calculation breakdown:');
       Object.entries(testWeights).forEach(([division, weight]) => {
         const csvHeader = divisionMapping[division];
         let inflationRate = 0;
         if (dataPoint.divisions[csvHeader] !== undefined) {
           inflationRate = dataPoint.divisions[csvHeader];
         }
-        testPersonalYoY += weight * inflationRate;
+        const contribution = weight * inflationRate;
+        testPersonalYoY += contribution;
+        console.log(`  ${division}: ${weight.toFixed(4)} × ${inflationRate}% = ${contribution.toFixed(4)}%`);
       });
-      console.log(`🧪 TEST: With Sweden weights: ${testPersonalYoY.toFixed(2)}% (should equal ${dataPoint.CPI_All}%)`);
+      console.log(`🧪 TEST: Total calculated: ${testPersonalYoY.toFixed(4)}%`);
+      console.log(`🧪 TEST: Official CPI_All: ${dataPoint.CPI_All}%`);
       console.log(`🧪 TEST: Difference: ${(testPersonalYoY - dataPoint.CPI_All).toFixed(4)}pp`);
+      
+      if (Math.abs(testPersonalYoY - dataPoint.CPI_All) > 0.01) {
+        console.log('🚨 MISMATCH DETECTED: Our Swedish weights don\'t match official calculation!');
+      }
     }
 
     // Swedish YoY is the official CPI for that month
