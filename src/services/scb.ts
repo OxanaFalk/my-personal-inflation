@@ -62,13 +62,14 @@ class SCBService {
     try {
       console.log('Fetching 12 months of SCB data...');
       
-      // Get 12 months of data starting from 2 months ago
+      // Get 12 months of recent data - SCB publishes with ~1-2 month delay
+      // Start from 2 months ago and go back 12 months
       const currentDate = new Date();
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 13, 1); // 13 months ago
+      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1); // 2 months ago
       const months: Date[] = [];
       
-      for (let i = 0; i < 12; i++) {
-        const monthDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+      for (let i = 11; i >= 0; i--) {
+        const monthDate = new Date(endDate.getFullYear(), endDate.getMonth() - i, 1);
         months.push(monthDate);
       }
       
@@ -81,16 +82,16 @@ class SCBService {
         try {
           console.log(`Attempting to fetch data for ${monthString}`);
           
-          // Build URLs - use index values, not percentages for historical data
+          // Build URLs - use YoY percentage changes as shown in user's example
           const totalParams = new URLSearchParams({
             'lang': 'sv',
-            'valueCodes[ContentsCode]': '000002ZI', // Index values
+            'valueCodes[ContentsCode]': '000004VV', // 12-month changes (YoY percentages)
             'valueCodes[Tid]': monthString
           });
           
           const coicopParams = new URLSearchParams({
             'lang': 'sv',
-            'valueCodes[ContentsCode]': '000002ZI', // Index values
+            'valueCodes[ContentsCode]': '000004VV', // 12-month changes (YoY percentages)
             'valueCodes[VaruTjanstegrupp]': '01,02,03,04,05,06,07,08,09,10,11,12',
             'valueCodes[Tid]': monthString,
             'codelist[VaruTjanstegrupp]': 'vs_VaruTjänstegrCoicopA'
@@ -156,11 +157,11 @@ class SCBService {
 
   private parsePXStatResponse(totalData: string, coicopData: string, date: Date): CPIData[] {
     try {
-      // Parse total CPI from PX-stat format
-      let totalCPI = 1.1; // fallback to known August 2025 value
+      // Parse total CPI YoY percentage from PX-stat format
+      let totalYoY = 1.1; // fallback value
       const totalDataMatch = totalData.match(/DATA=\s*([\d.-]+)/);
       if (totalDataMatch) {
-        totalCPI = parseFloat(totalDataMatch[1]);
+        totalYoY = parseFloat(totalDataMatch[1]);
       }
       
       // Parse COICOP divisions from PX-stat format
@@ -203,15 +204,15 @@ class SCBService {
         return [];
       }
       
-      // Create CPIData entry
+      // Create CPIData entry with YoY data
       const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
-      console.log('Parsed SCB data:', { totalCPI, divisions, date: dateString });
+      console.log('Parsed SCB YoY data:', { totalYoY, divisions, date: dateString });
       
       return [{
         date: dateString,
-        CPI_All: totalCPI,
-        divisions
+        CPI_All: totalYoY, // This is now YoY percentage, not index
+        divisions // These are also YoY percentages
       }];
       
     } catch (error) {
