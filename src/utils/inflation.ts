@@ -12,46 +12,29 @@ export interface InflationResult {
   difference: number | null;
 }
 
-// Calculate personal CPI for each time period
+// Calculate personal inflation rate for each time period
 export function calculatePersonalCPI(
   cpiData: CPIData[],
   percentageWeights: SpendingWeights
 ): InflationResult[] {
   const decimalWeights = percentageToDecimalWeights(percentageWeights);
   
-  return cpiData.map((dataPoint, index) => {
-    // Calculate weighted personal CPI
-    let personalCPI = 0;
+  return cpiData.map(dataPoint => {
+    // Calculate weighted personal inflation rate directly from the inflation data
+    let personalYoY = 0;
     Object.entries(decimalWeights).forEach(([division, weight]) => {
-      const cpiValue = dataPoint.divisions[division] || 100; // Default to 100 if missing
-      personalCPI += weight * cpiValue;
+      const inflationRate = dataPoint.divisions[division] || 0; // Use inflation rate directly
+      personalYoY += weight * inflationRate;
     });
 
-    // Calculate YoY changes (if we have data from 12 months ago)
-    let personalYoY: number | null = null;
-    let swedishYoY: number | null = null;
-    let difference: number | null = null;
-
-    if (index >= 12) {
-      const previousDataPoint = cpiData[index - 12];
-      
-      // Calculate previous period personal CPI
-      let previousPersonalCPI = 0;
-      Object.entries(decimalWeights).forEach(([division, weight]) => {
-        const cpiValue = previousDataPoint.divisions[division] || 100;
-        previousPersonalCPI += weight * cpiValue;
-      });
-
-      // Calculate year-over-year changes
-      personalYoY = ((personalCPI / previousPersonalCPI) - 1) * 100;
-      swedishYoY = ((dataPoint.CPI_All / previousDataPoint.CPI_All) - 1) * 100;
-      difference = personalYoY - swedishYoY;
-    }
+    // Swedish YoY is already provided in the CPI_All column as inflation rate
+    const swedishYoY = dataPoint.CPI_All;
+    const difference = personalYoY - swedishYoY;
 
     return {
       date: dataPoint.date,
-      personalCPI,
-      swedishCPI: dataPoint.CPI_All,
+      personalCPI: 100, // Not needed since we work with rates directly
+      swedishCPI: 100, // Not needed since we work with rates directly
       personalYoY,
       swedishYoY,
       difference
@@ -84,26 +67,18 @@ export function getLatestInflationMetrics(results: InflationResult[]): {
   };
 }
 
-// Calculate division-specific YoY changes for AI insights
+// Calculate division-specific inflation rates for AI insights
 export function getDivisionYoYChanges(cpiData: CPIData[]): { [division: string]: number | null } {
-  if (cpiData.length < 13) {
+  if (cpiData.length === 0) {
     return {};
   }
 
+  // Get the latest data point - inflation rates are already calculated
   const latest = cpiData[cpiData.length - 1];
-  const yearAgo = cpiData[cpiData.length - 13];
-
   const divisionChanges: { [division: string]: number | null } = {};
   
   Object.keys(latest.divisions).forEach(division => {
-    const latestValue = latest.divisions[division];
-    const yearAgoValue = yearAgo.divisions[division];
-    
-    if (latestValue && yearAgoValue) {
-      divisionChanges[division] = ((latestValue / yearAgoValue) - 1) * 100;
-    } else {
-      divisionChanges[division] = null;
-    }
+    divisionChanges[division] = latest.divisions[division];
   });
 
   return divisionChanges;

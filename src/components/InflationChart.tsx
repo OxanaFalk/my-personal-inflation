@@ -11,7 +11,12 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
   const chartData = data
     .filter(d => d.personalYoY !== null && d.swedishYoY !== null)
     .map(d => ({
-      date: new Date(d.date).toLocaleDateString('sv-SE', { year: 'numeric', month: 'short' }),
+      date: (() => {
+        const [year, month] = d.date.split('-');
+        const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${monthNames[parseInt(month)]} ${year}`;
+      })(),
       personal: d.personalYoY,
       swedish: d.swedishYoY,
       rawDate: d.date
@@ -53,6 +58,10 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
                 dataKey="date" 
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                interval="preserveStartEnd"
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"

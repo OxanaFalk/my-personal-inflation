@@ -7,38 +7,84 @@ export interface CPIData {
   };
 }
 
-// COICOP division mapping
+// COICOP division mapping with explanations
 export const DIVISIONS = {
-  'D01_Food': { code: '01', name: 'Food and non-alcoholic beverages' },
-  'D02_AlcoholTobacco': { code: '02', name: 'Alcoholic beverages, tobacco and narcotics' },
-  'D03_Clothing': { code: '03', name: 'Clothing and footwear' },
-  'D04_Housing': { code: '04', name: 'Housing, water, electricity, gas and other fuels' },
-  'D05_Furnishings': { code: '05', name: 'Furnishings, household equipment and routine household maintenance' },
-  'D06_Health': { code: '06', name: 'Health' },
-  'D07_Transport': { code: '07', name: 'Transport' },
-  'D08_InfoComm': { code: '08', name: 'Information and communication' },
-  'D09_Recreation': { code: '09', name: 'Recreation, sport and culture' },
-  'D10_Education': { code: '10', name: 'Education services' },
-  'D11_Restaurants': { code: '11', name: 'Restaurants and accommodation services' },
-  'D12_InsuranceFinance': { code: '12', name: 'Insurance and financial services' },
-  'D13_PersonalMisc': { code: '13', name: 'Personal care, social protection and miscellaneous goods and services' },
+  '01_Food': { 
+    code: '01', 
+    name: 'Food and non-alcoholic beverages',
+    description: 'Groceries, beverages, and basic food items'
+  },
+  '02_AlcoholTobacco': { 
+    code: '02', 
+    name: 'Alcoholic beverages, tobacco and narcotics',
+    description: 'Alcoholic drinks, tobacco products, and related items'
+  },
+  '03_Clothing': { 
+    code: '03', 
+    name: 'Clothing and footwear',
+    description: 'Clothes, shoes, and fashion accessories'
+  },
+  '04_Housing': { 
+    code: '04', 
+    name: 'Housing, water, electricity, gas and other fuels',
+    description: 'Rent, utilities, home energy costs'
+  },
+  '05_Furnishings': { 
+    code: '05', 
+    name: 'Furnishings, household equipment and routine household maintenance',
+    description: 'Furniture, appliances, home maintenance'
+  },
+  '06_Health': { 
+    code: '06', 
+    name: 'Health',
+    description: 'Medical expenses, healthcare, pharmaceuticals'
+  },
+  '07_Transport': { 
+    code: '07', 
+    name: 'Transport',
+    description: 'Cars, fuel, public transport, travel'
+  },
+  '08_Communication': { 
+    code: '08', 
+    name: 'Information and communication',
+    description: 'Phone, internet, postal services'
+  },
+  '09_Recreation': { 
+    code: '09', 
+    name: 'Recreation, sport and culture',
+    description: 'Entertainment, hobbies, sports, cultural activities'
+  },
+  '10_Education': { 
+    code: '10', 
+    name: 'Education services',
+    description: 'School fees, courses, educational materials'
+  },
+  '11_RestaurantsHotels': { 
+    code: '11', 
+    name: 'Restaurants and accommodation services',
+    description: 'Dining out, hotels, accommodation'
+  },
+  '12_Misc': { 
+    code: '12', 
+    name: 'Personal care, social protection and miscellaneous',
+    description: 'Insurance, personal care, financial services'
+  }
 } as const;
 
-// Swedish average spending weights (approximation for preset)
+// Swedish average spending weights from CSV data (converted from decimals to percentages)
 export const SWEDEN_AVERAGE_WEIGHTS = {
-  D01_Food: 12.8,
-  D02_AlcoholTobacco: 2.1,
-  D03_Clothing: 4.2,  
-  D04_Housing: 28.5,
-  D05_Furnishings: 4.8,
-  D06_Health: 3.9,
-  D07_Transport: 13.2,
-  D08_InfoComm: 2.8,
-  D09_Recreation: 10.7,
-  D10_Education: 0.6,
-  D11_Restaurants: 5.8,
-  D12_InsuranceFinance: 6.1,
-  D13_PersonalMisc: 4.5,
+  '01_Food': 13.4,
+  '02_AlcoholTobacco': 3.2,
+  '03_Clothing': 4.2,
+  '04_Housing': 25.3,
+  '05_Furnishings': 6.2,
+  '06_Health': 3.2,
+  '07_Transport': 13.2,
+  '08_Communication': 3.2,
+  '09_Recreation': 12.7,
+  '10_Education': 0.4,
+  '11_RestaurantsHotels': 7.9,
+  '12_Misc': 7.1,
 };
 
 class SCBService {
@@ -119,17 +165,29 @@ class SCBService {
     const headers = lines[0].split(',');
     
     return lines.slice(1).map(line => {
-      const values = line.split(',').map(v => parseFloat(v.trim()));
+      const values = line.split(',');
       const divisions: { [key: string]: number } = {};
       
-      // Skip first two columns (date, CPI_All)
-      headers.slice(2).forEach((header, index) => {
-        divisions[header.trim()] = values[index + 2];
+      // Parse date and CPI_Total
+      const dateStr = values[0].trim();
+      const cpiTotal = parseFloat(values[1]);
+      
+      // Extract division inflation rates (columns 2-13)
+      const divisionHeaders = headers.slice(2, 14); // Only inflation columns, not weights
+      divisionHeaders.forEach((header, index) => {
+        const value = parseFloat(values[index + 2]);
+        divisions[header.trim()] = value;
       });
       
+      // Convert date format from 2024M09 to readable format
+      const [year, month] = dateStr.split('M');
+      const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const formattedDate = `${year}-${month.padStart(2, '0')}`;
+      
       return {
-        date: values[0].toString(), // Will be processed as date string
-        CPI_All: values[1],
+        date: formattedDate,
+        CPI_All: cpiTotal,
         divisions
       };
     });

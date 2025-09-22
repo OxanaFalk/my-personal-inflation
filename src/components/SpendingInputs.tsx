@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { RotateCcw, Percent, DollarSign } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { RotateCcw, Percent, DollarSign, HelpCircle } from "lucide-react";
 import { DIVISIONS, SWEDEN_AVERAGE_WEIGHTS } from '@/services/scb';
 import { SpendingWeights, InputMode, normalizePercentageWeights, sekToPercentageWeights, getTotalWeight } from '@/utils/weights';
 
@@ -50,49 +51,60 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
   const totalWeight = getTotalWeight(inputValues);
 
   return (
-    <Card className="p-6 bg-card border border-border shadow-soft">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Your Spending Mix</h3>
-        
-        <ToggleGroup type="single" value={mode} onValueChange={(value) => value && onModeChange(value as InputMode)}>
-          <ToggleGroupItem value="percentage" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-            <Percent className="h-4 w-4 mr-1" />
-            %
-          </ToggleGroupItem>
-          <ToggleGroupItem value="sek" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-            <DollarSign className="h-4 w-4 mr-1" />
-            SEK
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+    <TooltipProvider>
+      <Card className="p-6 bg-card border border-border shadow-soft">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold">Your Spending Mix</h3>
+          
+          <ToggleGroup type="single" value={mode} onValueChange={(value) => value && onModeChange(value as InputMode)}>
+            <ToggleGroupItem value="percentage" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              <Percent className="h-4 w-4 mr-1" />
+              %
+            </ToggleGroupItem>
+            <ToggleGroupItem value="sek" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              <DollarSign className="h-4 w-4 mr-1" />
+              SEK
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
 
-      <div className="grid gap-4 mb-6">
-        {Object.entries(DIVISIONS).map(([divisionKey, division]) => (
-          <div key={divisionKey} className="flex items-center gap-4">
-            <div className="min-w-0 flex-1">
-              <Label htmlFor={divisionKey} className="text-sm font-medium">
-                {division.code}. {division.name}
-              </Label>
+        <div className="grid gap-4 mb-6">
+          {Object.entries(DIVISIONS).map(([divisionKey, division]) => (
+            <div key={divisionKey} className="flex items-center gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor={divisionKey} className="text-sm font-medium">
+                    {division.code}. {division.name}
+                  </Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-64">
+                      <p className="text-xs">{division.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+              <div className="w-24">
+                <Input
+                  id={divisionKey}
+                  type="number"
+                  min="0"
+                  step={mode === 'percentage' ? '0.1' : '1'}
+                  max={mode === 'percentage' ? '100' : undefined}
+                  value={inputValues[divisionKey] || ''}
+                  onChange={(e) => handleInputChange(divisionKey, e.target.value)}
+                  placeholder="0"
+                  className="text-right"
+                />
+              </div>
+              <div className="w-12 text-sm text-muted-foreground text-right">
+                {mode === 'percentage' ? '%' : 'SEK'}
+              </div>
             </div>
-            <div className="w-24">
-              <Input
-                id={divisionKey}
-                type="number"
-                min="0"
-                step={mode === 'percentage' ? '0.1' : '1'}
-                max={mode === 'percentage' ? '100' : undefined}
-                value={inputValues[divisionKey] || ''}
-                onChange={(e) => handleInputChange(divisionKey, e.target.value)}
-                placeholder="0"
-                className="text-right"
-              />
-            </div>
-            <div className="w-12 text-sm text-muted-foreground text-right">
-              {mode === 'percentage' ? '%' : 'SEK'}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
       <div className="flex items-center justify-between mb-4 p-3 bg-muted rounded-lg">
         <span className="font-medium">Total:</span>
@@ -126,7 +138,8 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
           </p>
         </div>
       )}
-    </Card>
+      </Card>
+    </TooltipProvider>
   );
 };
 
