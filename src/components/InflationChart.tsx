@@ -88,13 +88,8 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
           </ResponsiveContainer>
         </div>
         
-        <div className="mt-4 text-sm text-muted-foreground space-y-1">
-          <div>
-            Data source: <a href="https://www.scb.se/" target="_blank" rel="noopener noreferrer" className="hover:underline">SCB (Statistics Sweden)</a>
-          </div>
-          <div className="text-xs">
-            <strong>Note:</strong> This is a concept illustration built to explore Lovable. Small differences may occur due to rounding errors and simplified calculations. Not intended as absolute truth.
-          </div>
+        <div className="mt-4 text-xs text-muted-foreground">
+          <strong>Note:</strong> This is a concept illustration built to explore Lovable. Data may not be entirely accurate despite intentions to use official sources. Small differences may occur due to rounding errors and simplified calculations.
         </div>
       </div>
     </div>
