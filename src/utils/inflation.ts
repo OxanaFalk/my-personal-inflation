@@ -17,10 +17,16 @@ export function calculatePersonalCPI(
   cpiData: CPIData[],
   percentageWeights: SpendingWeights
 ): InflationResult[] {
+  console.log('=== CALCULATION START ===');
+  console.log('Input percentageWeights:', percentageWeights);
+  console.log('CPI data length:', cpiData.length);
+  console.log('First data point:', cpiData[0]);
+  
   const decimalWeights = percentageToDecimalWeights(percentageWeights);
   
   console.log('User weights (will be applied to ALL months):', percentageWeights);
   console.log('Decimal weights:', decimalWeights);
+  console.log('Decimal weights sum:', Object.values(decimalWeights).reduce((sum, w) => sum + w, 0));
   
   return cpiData.map((dataPoint, index) => {
     // Calculate weighted personal inflation rate using USER'S WEIGHTS (same for all months)
