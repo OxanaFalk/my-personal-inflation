@@ -78,7 +78,7 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help flex-shrink-0" />
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-64">
                       <p className="text-xs">{division.description}</p>
@@ -96,11 +96,15 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                   value={inputValues[divisionKey] || ''}
                   onChange={(e) => handleInputChange(divisionKey, e.target.value)}
                   placeholder="0"
-                  className="text-right"
+                  className="text-right [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                 />
               </div>
-              <div className="w-12 text-sm text-muted-foreground text-right">
-                {mode === 'percentage' ? '%' : 'SEK'}
+              <div className="w-16 text-sm text-muted-foreground text-right">
+                {mode === 'percentage' ? (
+                  <span className="flex items-center justify-end gap-1">
+                    % <span className="text-xs opacity-60">({SWEDEN_AVERAGE_WEIGHTS[divisionKey as keyof typeof SWEDEN_AVERAGE_WEIGHTS]?.toFixed(1)})</span>
+                  </span>
+                ) : 'SEK'}
               </div>
             </div>
           ))}

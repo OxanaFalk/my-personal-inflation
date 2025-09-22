@@ -13,9 +13,7 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
     .map(d => ({
       date: (() => {
         const [year, month] = d.date.split('-');
-        const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `${monthNames[parseInt(month)]} ${year}`;
+        return `${year}M${month.padStart(2, '0')}`;
       })(),
       personal: d.personalYoY,
       swedish: d.swedishYoY,
