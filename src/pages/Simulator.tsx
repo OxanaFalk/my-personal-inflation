@@ -79,11 +79,6 @@ const Simulator = () => {
     return getLatestInflationMetrics(inflationResults);
   }, [inflationResults]);
 
-  // Calculate division YoY changes for display in SpendingInputs
-  const divisionInflationRates = useMemo(() => {
-    if (cpiData.length === 0) return {};
-    return getDivisionYoYChanges(cpiData);
-  }, [cpiData]);
 
   const handleWeightsChange = (newWeights: SpendingWeights) => {
     setWeights(newWeights);
@@ -143,7 +138,6 @@ const Simulator = () => {
               mode={mode}
               onWeightsChange={handleWeightsChange}
               onModeChange={setMode}
-              divisionInflationRates={divisionInflationRates}
             />
           </div>
 

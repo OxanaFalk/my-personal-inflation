@@ -31,10 +31,9 @@ interface SpendingInputsProps {
   mode: InputMode;
   onWeightsChange: (weights: SpendingWeights) => void;
   onModeChange: (mode: InputMode) => void;
-  divisionInflationRates?: { [division: string]: number | null };
 }
 
-const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange, divisionInflationRates }: SpendingInputsProps) => {
+const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: SpendingInputsProps) => {
   const [inputValues, setInputValues] = useState<SpendingWeights>(weights);
 
   // Update input values when mode changes (but not when weights change to avoid interference)
@@ -138,11 +137,6 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange, division
                     </TooltipContent>
                   </Tooltip>
                 </div>
-                {divisionInflationRates && divisionInflationRates[divisionKey] !== undefined && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    12-month inflation: {divisionInflationRates[divisionKey] !== null ? `${divisionInflationRates[divisionKey]!.toFixed(1)}%` : 'N/A'}
-                  </div>
-                )}
               </div>
               <div className="w-24">
                 <Input
