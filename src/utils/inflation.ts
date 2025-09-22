@@ -17,6 +17,7 @@ export function calculatePersonalCPI(
   cpiData: CPIData[],
   percentageWeights: SpendingWeights
 ): InflationResult[] {
+  console.log('🚨 CODE VERSION CHECK: calculatePersonalCPI called - 2025-09-22 v2.0');
   console.log('=== CALCULATION START ===');
   console.log('Input percentageWeights:', percentageWeights);
   console.log('CPI data length:', cpiData.length);
