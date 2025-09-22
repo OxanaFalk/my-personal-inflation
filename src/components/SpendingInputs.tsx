@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,11 @@ interface SpendingInputsProps {
 
 const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: SpendingInputsProps) => {
   const [inputValues, setInputValues] = useState<SpendingWeights>(weights);
+
+  // Sync inputValues with weights prop changes
+  useEffect(() => {
+    setInputValues(weights);
+  }, [weights]);
 
   const handleInputChange = (divisionKey: string, value: string) => {
     const numericValue = parseFloat(value) || 0;
