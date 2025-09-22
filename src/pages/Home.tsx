@@ -19,7 +19,7 @@ const Home = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Compare your personal inflation to Sweden's CPI. 
+            Compare your personal inflation to Sweden's CPI using real SCB data. 
             Enter your spending mix and discover how inflation affects you personally.
           </p>
           
@@ -42,7 +42,7 @@ const Home = () => {
             </div>
             <h3 className="text-xl font-semibold mb-3">Personal CPI Calculator</h3>
             <p className="text-muted-foreground">
-              Input your spending across different categories in percentages or SEK amounts
+              Input your spending across all COICOP divisions in percentages or SEK amounts
             </p>
           </div>
           
