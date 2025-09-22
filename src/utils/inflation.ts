@@ -26,7 +26,8 @@ export function calculatePersonalCPI(
     // Calculate weighted personal inflation rate directly from the inflation data
     let personalYoY = 0;
     Object.entries(decimalWeights).forEach(([division, weight]) => {
-      const inflationRate = dataPoint.divisions[division] || 0;
+      // Handle both formats: "01_Food" and "D01_Food" for backwards compatibility
+      const inflationRate = dataPoint.divisions[division] || dataPoint.divisions[`D${division}`] || 0;
       personalYoY += weight * inflationRate;
       console.log(`Division ${division}: weight=${weight}, rate=${inflationRate}, contribution=${weight * inflationRate}`); // Debug log
     });
