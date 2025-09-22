@@ -72,9 +72,7 @@ This difference is primarily driven by your spending allocation to ${topCategory
 
 Looking at recent data, ${diff > 0 ? 'housing and energy costs have been significant contributors to the gap' : 'your spending pattern has provided some protection against broad price pressures'}.
 
-Practical tip: Consider ${diff > 0 ? 'diversifying spending away from high-inflation categories where possible, particularly in discretionary areas' : 'maintaining your current spending allocation as it appears resilient to current inflationary pressures'}.
-
-Note: This analysis is illustrative and based on SCB CPI data (COICOP, 2020=100).`;
+Practical tip: Consider ${diff > 0 ? 'diversifying spending away from high-inflation categories where possible, particularly in discretionary areas' : 'maintaining your current spending allocation as it appears resilient to current inflationary pressures'}.`;
   };
 
   return (
