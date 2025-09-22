@@ -103,7 +103,7 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                   value={inputValues[divisionKey] || ''}
                   onChange={(e) => handleInputChange(divisionKey, e.target.value)}
                   placeholder="0"
-                  className="text-right [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                  className="text-right"
                 />
               </div>
               <div className="w-16 text-sm text-muted-foreground text-right">
