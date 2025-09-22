@@ -50,14 +50,42 @@ export function calculatePersonalCPI(
     
     Object.entries(decimalWeights).forEach(([division, weight]) => {
       const csvHeader = divisionMapping[division];
-      const inflationRate = dataPoint.divisions[csvHeader] || 0;
+      
+      // Try multiple approaches to find the inflation rate
+      let inflationRate = 0;
+      
+      // First, try exact match
+      if (dataPoint.divisions[csvHeader] !== undefined) {
+        inflationRate = dataPoint.divisions[csvHeader];
+      } else {
+        // Try to find by looking for similar keys (case insensitive, trim whitespace)
+        const availableKeys = Object.keys(dataPoint.divisions);
+        const matchingKey = availableKeys.find(key => 
+          key.toLowerCase().trim() === csvHeader.toLowerCase().trim()
+        );
+        
+        if (matchingKey) {
+          inflationRate = dataPoint.divisions[matchingKey];
+        } else {
+          // Last resort: try partial matching
+          const partialMatch = availableKeys.find(key => 
+            key.includes(csvHeader.substring(1)) || csvHeader.includes(key.substring(1))
+          );
+          if (partialMatch) {
+            inflationRate = dataPoint.divisions[partialMatch];
+          }
+        }
+      }
+      
       personalYoY += weight * inflationRate;
       
       if (index === 0) {
         console.log(`${division} -> ${csvHeader}: weight=${weight.toFixed(4)}, rate=${inflationRate}%, contribution=${(weight * inflationRate).toFixed(4)}%`);
-        console.log(`  Available divisions:`, Object.keys(dataPoint.divisions));
-        console.log(`  Looking for: "${csvHeader}", found:`, dataPoint.divisions[csvHeader]);
-        console.log(`  All division values:`, dataPoint.divisions);
+        if (inflationRate === 0) {
+          console.log(`  ZERO RATE DEBUG - Available keys:`, Object.keys(dataPoint.divisions));
+          console.log(`  Looking for: "${csvHeader}"`);
+          console.log(`  All values:`, dataPoint.divisions);
+        }
       }
     });
 
