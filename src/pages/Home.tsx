@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { TrendingUp, Calculator, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -23,14 +22,12 @@ const Home = () => {
             Enter your spending mix and discover how inflation affects you personally.
           </p>
           
-          <Link to="/simulator">
-            <Button 
-              size="lg" 
-              className="bg-gradient-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105 px-8 py-6 text-lg font-semibold"
-            >
-              Start Calculating
-              <Calculator className="ml-2 h-5 w-5" />
-            </Button>
+          <Link 
+            to="/simulator"
+            className="inline-flex items-center justify-center bg-gradient-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105 px-8 py-6 text-lg font-semibold rounded-lg text-primary-foreground shadow-soft"
+          >
+            Start Calculating
+            <Calculator className="ml-2 h-5 w-5" />
           </Link>
         </div>
         

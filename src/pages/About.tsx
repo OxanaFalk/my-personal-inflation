@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -7,11 +6,12 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <Link to="/">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
           </Link>
           
           <div className="flex items-center gap-3 mb-6">

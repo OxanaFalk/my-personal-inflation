@@ -105,11 +105,12 @@ const Simulator = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
             </Link>
             <div>
               <h1 className="text-2xl font-bold">My<span className="text-primary">flation</span> Calculator</h1>
@@ -119,10 +120,11 @@ const Simulator = () => {
           
           <div className="flex items-center gap-3">
             <ShareLink weights={weights} mode={mode} />
-            <Link to="/about">
-              <Button variant="outline" size="sm">
-                About
-              </Button>
+            <Link 
+              to="/about" 
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+            >
+              About
             </Link>
           </div>
         </div>
