@@ -1,6 +1,6 @@
 // Inflation calculation utilities
 
-import { CPIData } from '../services/scb';
+import { CPIData, SWEDEN_AVERAGE_WEIGHTS } from '../services/scb';
 import { SpendingWeights, percentageToDecimalWeights } from './weights';
 
 export interface InflationResult {
@@ -17,11 +17,17 @@ export function calculatePersonalCPI(
   cpiData: CPIData[],
   percentageWeights: SpendingWeights
 ): InflationResult[] {
-  console.log('🚨 CODE VERSION CHECK: calculatePersonalCPI called - 2025-09-22 v2.0');
+  console.log('🚨 CODE VERSION CHECK: calculatePersonalCPI called - 2025-09-22 v2.1');
   console.log('=== CALCULATION START ===');
   console.log('Input percentageWeights:', percentageWeights);
   console.log('CPI data length:', cpiData.length);
   console.log('First data point:', cpiData[0]);
+  
+  // Test calculation with Sweden average weights for verification
+  const testWeights = percentageToDecimalWeights(SWEDEN_AVERAGE_WEIGHTS);
+  console.log('🧪 TEST: Sweden average weights:', SWEDEN_AVERAGE_WEIGHTS);
+  console.log('🧪 TEST: Sweden decimal weights:', testWeights);
+  console.log('🧪 TEST: Sweden weights sum:', Object.values(testWeights).reduce((sum, w) => sum + w, 0));
   
   const decimalWeights = percentageToDecimalWeights(percentageWeights);
   
@@ -92,6 +98,19 @@ export function calculatePersonalCPI(
 
     if (index === 0) {
       console.log(`${dataPoint.date}: Personal=${personalYoY.toFixed(2)}%, Swedish=${dataPoint.CPI_All}%`);
+      
+      // Test calculation with Swedish average weights
+      let testPersonalYoY = 0;
+      Object.entries(testWeights).forEach(([division, weight]) => {
+        const csvHeader = divisionMapping[division];
+        let inflationRate = 0;
+        if (dataPoint.divisions[csvHeader] !== undefined) {
+          inflationRate = dataPoint.divisions[csvHeader];
+        }
+        testPersonalYoY += weight * inflationRate;
+      });
+      console.log(`🧪 TEST: With Sweden weights: ${testPersonalYoY.toFixed(2)}% (should equal ${dataPoint.CPI_All}%)`);
+      console.log(`🧪 TEST: Difference: ${(testPersonalYoY - dataPoint.CPI_All).toFixed(4)}pp`);
     }
 
     // Swedish YoY is the official CPI for that month
