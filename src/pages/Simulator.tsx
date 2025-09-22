@@ -11,14 +11,13 @@ import AIInsightCard from '@/components/AIInsightCard';
 import ShareLink from '@/components/ShareLink';
 
 import { scbService, SWEDEN_AVERAGE_WEIGHTS } from '@/services/scb';
-import { SpendingWeights, InputMode, normalizePercentageWeights } from '@/utils/weights';
+import { SpendingWeights, normalizePercentageWeights } from '@/utils/weights';
 import { calculatePersonalCPI, getLatestInflationMetrics, formatPercentage, formatPercentagePoints } from '@/utils/inflation';
 import type { CPIData } from '@/services/scb';
 
 const Simulator = () => {
   const [searchParams] = useSearchParams();
   const [weights, setWeights] = useState<SpendingWeights>(SWEDEN_AVERAGE_WEIGHTS);
-  const [mode, setMode] = useState<InputMode>('percentage');
   const [cpiData, setCpiData] = useState<CPIData[]>([]);
   const [isDemo, setIsDemo] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,11 +42,6 @@ const Simulator = () => {
 
   // Parse URL parameters on mount
   useEffect(() => {
-    const urlMode = searchParams.get('mode') as InputMode;
-    if (urlMode && ['percentage', 'sek'].includes(urlMode)) {
-      setMode(urlMode);
-    }
-
     // Parse weights from URL
     const urlWeights: SpendingWeights = {};
     let hasUrlWeights = false;
@@ -118,7 +112,7 @@ const Simulator = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <ShareLink weights={weights} mode={mode} />
+            <ShareLink weights={weights} />
             <Link to="/about">
               <Button variant="outline" size="sm">
                 About
@@ -132,9 +126,7 @@ const Simulator = () => {
           <div className="lg:col-span-4">
             <SpendingInputs
               weights={weights}
-              mode={mode}
               onWeightsChange={handleWeightsChange}
-              onModeChange={setMode}
             />
           </div>
 

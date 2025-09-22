@@ -1,21 +1,19 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Share2, Check, Copy } from "lucide-react";
-import { SpendingWeights, InputMode } from '@/utils/weights';
+import { Check, Copy } from "lucide-react";
+import { SpendingWeights } from '@/utils/weights';
 import { useToast } from "@/hooks/use-toast";
 
 interface ShareLinkProps {
   weights: SpendingWeights;
-  mode: InputMode;
 }
 
-const ShareLink = ({ weights, mode }: ShareLinkProps) => {
+const ShareLink = ({ weights }: ShareLinkProps) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const generateShareableURL = () => {
     const params = new URLSearchParams();
-    params.set('mode', mode);
     
     // Add weight parameters
     Object.entries(weights).forEach(([key, value]) => {
