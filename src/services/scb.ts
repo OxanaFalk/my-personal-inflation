@@ -60,32 +60,37 @@ class SCBService {
 
   private async fetchFromSCB(): Promise<CPIData[] | null> {
     try {
-      // Use CORS proxy to access SCB API
-      const proxyUrl = 'https://api.cors.lol/?url=';
+      console.log('Fetching 12 months of SCB data...');
       
-      // Try to get the latest available data (month-1, then month-2)
+      // Get 12 months of data starting from 2 months ago
       const currentDate = new Date();
-      const attempts = [
-        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1), // Previous month
-        new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1)  // Two months ago
-      ];
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 13, 1); // 13 months ago
+      const months: Date[] = [];
       
-      for (const attemptDate of attempts) {
-        const monthString = `${attemptDate.getFullYear()}M${String(attemptDate.getMonth() + 1).padStart(2, '0')}`;
+      for (let i = 0; i < 12; i++) {
+        const monthDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+        months.push(monthDate);
+      }
+      
+      // Try direct API calls first (without CORS proxy)
+      const results: CPIData[] = [];
+      
+      for (const monthDate of months) {
+        const monthString = `${monthDate.getFullYear()}M${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
         
         try {
           console.log(`Attempting to fetch data for ${monthString}`);
           
-          // Build URLs for both total CPI and COICOP divisions
+          // Build URLs - use index values, not percentages for historical data
           const totalParams = new URLSearchParams({
             'lang': 'sv',
-            'valueCodes[ContentsCode]': '000004VV', // 12-month change
+            'valueCodes[ContentsCode]': '000002ZI', // Index values
             'valueCodes[Tid]': monthString
           });
           
           const coicopParams = new URLSearchParams({
             'lang': 'sv',
-            'valueCodes[ContentsCode]': '000002ZI', // Yearly change
+            'valueCodes[ContentsCode]': '000002ZI', // Index values
             'valueCodes[VaruTjanstegrupp]': '01,02,03,04,05,06,07,08,09,10,11,12',
             'valueCodes[Tid]': monthString,
             'codelist[VaruTjanstegrupp]': 'vs_VaruTjänstegrCoicopA'
@@ -94,33 +99,54 @@ class SCBService {
           const totalUrl = `${this.totalCPIUrl}?${totalParams.toString()}`;
           const coicopUrl = `${this.coicopUrl}?${coicopParams.toString()}`;
           
-          const [totalResponse, coicopResponse] = await Promise.all([
-            fetch(`${proxyUrl}${encodeURIComponent(totalUrl)}`),
-            fetch(`${proxyUrl}${encodeURIComponent(coicopUrl)}`)
-          ]);
+          // Try both direct and CORS proxy
+          const attempts = [
+            // Direct calls
+            { totalUrl, coicopUrl },
+            // CORS proxy calls
+            { 
+              totalUrl: `https://api.cors.lol/?url=${encodeURIComponent(totalUrl)}`,
+              coicopUrl: `https://api.cors.lol/?url=${encodeURIComponent(coicopUrl)}`
+            }
+          ];
           
-          if (totalResponse.ok && coicopResponse.ok) {
-            const [totalData, coicopData] = await Promise.all([
-              totalResponse.text(), // Get as text since it's PX-stat format 
-              coicopResponse.text()
-            ]);
-            
-            console.log(`Successfully fetched data for ${monthString}`);
-            console.log('Total CPI Response:', totalData.substring(0, 500));
-            console.log('COICOP Response:', coicopData.substring(0, 500));
-            
-            const result = this.parsePXStatResponse(totalData, coicopData, attemptDate);
-            if (result && result.length > 0) {
-              return result;
+          let success = false;
+          for (const { totalUrl: tUrl, coicopUrl: cUrl } of attempts) {
+            try {
+              const [totalResponse, coicopResponse] = await Promise.all([
+                fetch(tUrl),
+                fetch(cUrl)
+              ]);
+              
+              if (totalResponse.ok && coicopResponse.ok) {
+                const [totalData, coicopData] = await Promise.all([
+                  totalResponse.text(),
+                  coicopResponse.text()
+                ]);
+                
+                const monthData = this.parsePXStatResponse(totalData, coicopData, monthDate);
+                if (monthData && monthData.length > 0) {
+                  results.push(...monthData);
+                  success = true;
+                  console.log(`Successfully fetched data for ${monthString}`);
+                  break;
+                }
+              }
+            } catch (e) {
+              continue; // Try next approach
             }
           }
+          
+          if (!success) {
+            console.warn(`Failed to fetch data for ${monthString}, continuing with other months`);
+          }
+          
         } catch (error) {
-          console.warn(`Failed to fetch data for ${monthString}:`, error);
-          continue; // Try next month
+          console.warn(`Error fetching data for ${monthString}:`, error);
         }
       }
       
-      return null; // All attempts failed
+      return results.length > 0 ? results : null;
       
     } catch (error) {
       console.error('SCB API fetch failed:', error);

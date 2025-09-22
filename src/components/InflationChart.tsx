@@ -12,11 +12,12 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
     .filter(d => d.personalYoY !== null && d.swedishYoY !== null)
     .slice(-12) // Show only the last 12 months of YoY data
     .map(d => ({
-      date: new Date(d.date).toLocaleDateString('sv-SE', { year: 'numeric', month: 'short' }),
+      date: new Date(d.date + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
       personal: d.personalYoY,
       swedish: d.swedishYoY,
       rawDate: d.date
-    }));
+    }))
+    .sort((a, b) => new Date(a.rawDate + '-01').getTime() - new Date(b.rawDate + '-01').getTime());
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
