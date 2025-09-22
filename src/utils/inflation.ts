@@ -22,11 +22,16 @@ export function calculatePersonalCPI(
   console.log('Calculating with weights:', percentageWeights); // Debug log
   console.log('CPI data:', cpiData[0]); // Debug log
   
-  return cpiData.map(dataPoint => {
+  return cpiData.map((dataPoint, index) => {
     // Calculate weighted personal inflation rate directly from the inflation data
     let personalYoY = 0;
-    console.log('Available divisions in data:', Object.keys(dataPoint.divisions));
-    console.log('Weight divisions:', Object.keys(decimalWeights));
+    
+    if (index === 0) {
+      console.log(`=== DEBUGGING FOR ${dataPoint.date} ===`);
+      console.log('Available divisions in data:', Object.keys(dataPoint.divisions));
+      console.log('Weight divisions:', Object.keys(decimalWeights));
+      console.log('Sweden CPI All:', dataPoint.CPI_All);
+    }
     
     Object.entries(decimalWeights).forEach(([division, weight]) => {
       // Map division keys to CSV headers
@@ -48,8 +53,16 @@ export function calculatePersonalCPI(
       const csvHeader = divisionMapping[division];
       const inflationRate = dataPoint.divisions[csvHeader] || 0;
       personalYoY += weight * inflationRate;
-      console.log(`Division ${division} -> ${csvHeader}: weight=${weight}, rate=${inflationRate}, contribution=${weight * inflationRate}`);
+      
+      if (index === 0) {
+        console.log(`${division} -> ${csvHeader}: weight=${weight.toFixed(4)}, rate=${inflationRate}, contribution=${(weight * inflationRate).toFixed(4)}`);
+      }
     });
+
+    if (index === 0) {
+      console.log(`Total Personal YoY: ${personalYoY.toFixed(4)}, Sweden CPI: ${dataPoint.CPI_All}`);
+      console.log('=== END DEBUG ===');
+    }
 
     // Swedish YoY is already provided in the CPI_All column as inflation rate
     const swedishYoY = dataPoint.CPI_All;
