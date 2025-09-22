@@ -11,10 +11,7 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
   const chartData = data
     .filter(d => d.personalYoY !== null && d.swedishYoY !== null)
     .map(d => ({
-      date: (() => {
-        const [year, month] = d.date.split('-');
-        return `${year}M${month.padStart(2, '0')}`;
-      })(),
+      date: d.date, // Use the date directly from CSV (already in "2024M09" format)
       personal: d.personalYoY,
       swedish: d.swedishYoY,
       rawDate: d.date

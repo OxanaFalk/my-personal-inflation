@@ -169,7 +169,7 @@ class SCBService {
       const divisions: { [key: string]: number } = {};
       
       // Parse date and CPI_Total
-      const dateStr = values[0].trim();
+      const dateStr = values[0].trim(); // Keep original format like "2024M09"
       const cpiTotal = parseFloat(values[1]);
       
       // Extract division inflation rates (columns 2-13)
@@ -179,14 +179,8 @@ class SCBService {
         divisions[header.trim()] = value;
       });
       
-      // Convert date format from 2024M09 to readable format
-      const [year, month] = dateStr.split('M');
-      const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const formattedDate = `${year}-${month.padStart(2, '0')}`;
-      
       return {
-        date: formattedDate,
+        date: dateStr, // Keep original "2024M09" format
         CPI_All: cpiTotal,
         divisions
       };
