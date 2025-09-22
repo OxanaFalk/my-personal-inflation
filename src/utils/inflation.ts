@@ -55,6 +55,9 @@ export function calculatePersonalCPI(
       
       if (index === 0) {
         console.log(`${division} -> ${csvHeader}: weight=${weight.toFixed(4)}, rate=${inflationRate}%, contribution=${(weight * inflationRate).toFixed(4)}%`);
+        console.log(`  Available divisions:`, Object.keys(dataPoint.divisions));
+        console.log(`  Looking for: "${csvHeader}", found:`, dataPoint.divisions[csvHeader]);
+        console.log(`  All division values:`, dataPoint.divisions);
       }
     });
 
