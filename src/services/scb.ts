@@ -60,14 +60,17 @@ class SCBService {
 
   private async fetchFromSCB(): Promise<CPIData[] | null> {
     try {
-      // Fetch total CPI data
+      // Use different CORS proxy
+      const proxyUrl = 'https://api.cors.lol/?url=';
+      
+      // Fetch total CPI data (latest month only)
       const totalQuery = {
         "query": [
           {
             "code": "ContentsCode",
             "selection": {
               "filter": "item",
-              "values": ["000002ZI"] // Yearly change
+              "values": ["PR0101N1"] // Index values
             }
           }
         ],
@@ -76,52 +79,27 @@ class SCBService {
         }
       };
 
-      // Fetch COICOP division data
-      const coicopQuery = {
-        "query": [
-          {
-            "code": "ContentsCode",
-            "selection": {
-              "filter": "item",
-              "values": ["000002ZI"] // Yearly change
-            }
-          },
-          {
-            "code": "VaruTjanstegrupp",
-            "selection": {
-              "filter": "item",
-              "values": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-            }
-          }
-        ],
-        "response": {
-          "format": "json-stat2"
-        }
-      };
+      // Try to fetch just the total CPI data first
+      const totalUrl = `${proxyUrl}${encodeURIComponent(this.totalCPIUrl)}`;
 
-      const [totalResponse, coicopResponse] = await Promise.all([
-        fetch(this.totalCPIUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(totalQuery)
-        }),
-        fetch(this.coicopUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(coicopQuery)
-        })
-      ]);
+      const totalResponse = await fetch(totalUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(totalQuery)
+      });
 
-      if (!totalResponse.ok || !coicopResponse.ok) {
-        throw new Error(`SCB API error: ${totalResponse.status} / ${coicopResponse.status}`);
+      if (!totalResponse.ok) {
+        throw new Error(`SCB API error: ${totalResponse.status}`);
       }
 
-      const [totalData, coicopData] = await Promise.all([
-        totalResponse.json(),
-        coicopResponse.json()
-      ]);
-
-      return this.parseSCBResponse(totalData, coicopData);
+      const totalData = await totalResponse.json();
+      
+      // For now, just log the response to see what we get
+      console.log('SCB API Response:', totalData);
+      
+      // Return empty to trigger fallback until we can properly parse the response
+      return [];
+      
     } catch (error) {
       console.error('SCB API fetch failed:', error);
       return null;
@@ -129,10 +107,91 @@ class SCBService {
   }
 
   private parseSCBResponse(totalData: any, coicopData: any): CPIData[] {
-    // Parse JSON-stat2 format from SCB
-    // This would need to be implemented based on actual SCB response structure
-    // For now, return empty array to trigger fallback
-    return [];
+    try {
+      // For this implementation, we'll focus on getting the latest values
+      // SCB returns JSON-stat2 format with dimensions and values
+      
+      // Extract latest CPI total value
+      let latestCPITotal = 120.0; // fallback value
+      if (totalData.value && Array.isArray(totalData.value) && totalData.value.length > 0) {
+        // Get the last non-null value
+        const nonNullValues = totalData.value.filter((v: any) => v !== null);
+        if (nonNullValues.length > 0) {
+          latestCPITotal = nonNullValues[nonNullValues.length - 1];
+        }
+      }
+
+      // Extract COICOP division values
+      const divisions: { [key: string]: number } = {};
+      
+      if (coicopData.value && Array.isArray(coicopData.value)) {
+        // Parse dimensions to understand data structure
+        const dimensionIds = coicopData.id || [];
+        const sizes = coicopData.size || [];
+        
+        // Find VaruTjanstegrupp (goods/services group) dimension
+        const groupDimIndex = dimensionIds.indexOf('VaruTjanstegrupp');
+        const timeDimIndex = dimensionIds.indexOf('Tid');
+        
+        if (groupDimIndex !== -1 && coicopData.dimension?.VaruTjanstegrupp?.category?.index) {
+          const groupCategories = coicopData.dimension.VaruTjanstegrupp.category.index;
+          const groupCount = sizes[groupDimIndex] || 12;
+          
+          // Map group codes to division keys
+          const groupMapping: { [key: string]: string } = {
+            '01': 'D01_Food',
+            '02': 'D02_AlcoholTobacco', 
+            '03': 'D03_Clothing',
+            '04': 'D04_Housing',
+            '05': 'D05_Furnishings',
+            '06': 'D06_Health',
+            '07': 'D07_Transport',
+            '08': 'D08_InfoComm',
+            '09': 'D09_Recreation',
+            '10': 'D10_Education',
+            '11': 'D11_Restaurants',
+            '12': 'D12_InsuranceFinance'
+          };
+          
+          // Extract values for each group (taking latest time period)
+          if (Array.isArray(groupCategories)) {
+            groupCategories.forEach((groupCode: string, index: number) => {
+              const divisionKey = groupMapping[groupCode];
+              if (divisionKey && coicopData.value[index] !== null) {
+                divisions[divisionKey] = coicopData.value[index];
+              }
+            });
+          } else if (typeof groupCategories === 'object') {
+            Object.keys(groupCategories).forEach((groupCode: string) => {
+              const divisionKey = groupMapping[groupCode];
+              const index = groupCategories[groupCode];
+              if (divisionKey && index < coicopData.value.length && coicopData.value[index] !== null) {
+                divisions[divisionKey] = coicopData.value[index];
+              }
+            });
+          }
+        }
+      }
+      
+      // If we couldn't parse division data, return empty to trigger fallback
+      if (Object.keys(divisions).length < 10) {
+        console.warn('Could not parse enough division data from SCB response');
+        return [];
+      }
+      
+      // Create a single CPIData entry with current date
+      const currentDate = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      
+      return [{
+        date: currentDate,
+        CPI_All: latestCPITotal,
+        divisions
+      }];
+      
+    } catch (error) {
+      console.error('Error parsing SCB response:', error);
+      return [];
+    }
   }
 
   private async loadFallbackData(): Promise<CPIData[]> {
@@ -151,17 +210,17 @@ class SCBService {
     const headers = lines[0].split(',');
     
     return lines.slice(1).map(line => {
-      const values = line.split(',').map(v => parseFloat(v.trim()));
+      const values = line.split(',');
       const divisions: { [key: string]: number } = {};
       
-      // Skip first two columns (date, CPI_All)
+      // Skip first two columns (date, CPI_All) - date is string, CPI_All is number
       headers.slice(2).forEach((header, index) => {
-        divisions[header.trim()] = values[index + 2];
+        divisions[header.trim()] = parseFloat(values[index + 2]);
       });
       
       return {
-        date: values[0].toString(), // Will be processed as date string
-        CPI_All: values[1],
+        date: values[0].trim(), // Keep date as string
+        CPI_All: parseFloat(values[1]),
         divisions
       };
     });
