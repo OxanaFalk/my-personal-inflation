@@ -91,10 +91,14 @@ class SCBService {
   private readonly baseUrl = 'https://api.scb.se/OV0104/v1/doris/sv/ssd/START/PR/PR0101/PR0101A/KPI2020COICOP2M';
   
   async fetchCPIData(): Promise<{ data: CPIData[], isDemo: boolean }> {
+    console.log('=== FETCH CPI DATA START ===');
+    
     try {
       // Try to fetch from SCB API first
+      console.log('Attempting SCB API fetch...');
       const response = await this.fetchFromSCB();
       if (response) {
+        console.log('SCB API successful, returning data');
         return { data: response, isDemo: false };
       }
     } catch (error) {
@@ -102,7 +106,11 @@ class SCBService {
     }
     
     // Fallback to embedded CSV data
-    return { data: await this.loadFallbackData(), isDemo: true };
+    console.log('Using fallback CSV data...');
+    const fallbackData = await this.loadFallbackData();
+    console.log('Fallback data loaded:', fallbackData.length, 'items');
+    console.log('First fallback item:', fallbackData[0]);
+    return { data: fallbackData, isDemo: true };
   }
 
   private async fetchFromSCB(): Promise<CPIData[] | null> {
