@@ -1,7 +1,17 @@
 import { TrendingUp, Calculator, BarChart3 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Home = () => {
+  console.log("Home component rendering");
+  
+  // Test router context
+  try {
+    const location = useLocation();
+    console.log("Router context working, current path:", location.pathname);
+  } catch (error) {
+    console.error("Router context error in Home:", error);
+  }
+  
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Hero Section */}
