@@ -40,7 +40,8 @@ export const SWEDEN_AVERAGE_WEIGHTS = {
 };
 
 class SCBService {
-  private readonly baseUrl = 'https://api.scb.se/ov0104/v2beta/api/v2/tables/TAB5512/data';
+  private readonly totalCPIUrl = 'https://api.scb.se/ov0104/v2beta/api/v2/tables/TAB5737/data';
+  private readonly coicopUrl = 'https://api.scb.se/ov0104/v2beta/api/v2/tables/TAB5512/data';
   
   async fetchCPIData(): Promise<{ data: CPIData[], isDemo: boolean }> {
     try {
@@ -62,30 +63,64 @@ class SCBService {
       // Use CORS proxy to access SCB API
       const proxyUrl = 'https://api.cors.lol/?url=';
       
-      // Build URL for latest available data (2025M08)
-      const params = new URLSearchParams({
-        'lang': 'sv',
-        'valueCodes[ContentsCode]': '000002ZI', // Yearly change
-        'valueCodes[VaruTjanstegrupp]': '01,02,03,04,05,06,07,08,09,10,11,12',
-        'valueCodes[Tid]': '2025M08', // Latest available period
-        'codelist[VaruTjanstegrupp]': 'vs_VaruTjänstegrCoicopA'
-      });
+      // Try to get the latest available data (month-1, then month-2)
+      const currentDate = new Date();
+      const attempts = [
+        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1), // Previous month
+        new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1)  // Two months ago
+      ];
       
-      const scbUrl = `${this.baseUrl}?${params.toString()}`;
-      const proxyedUrl = `${proxyUrl}${encodeURIComponent(scbUrl)}`;
-
-      console.log('Fetching from SCB API:', scbUrl);
-      
-      const response = await fetch(proxyedUrl);
-      
-      if (!response.ok) {
-        throw new Error(`SCB API error: ${response.status}`);
+      for (const attemptDate of attempts) {
+        const monthString = `${attemptDate.getFullYear()}M${String(attemptDate.getMonth() + 1).padStart(2, '0')}`;
+        
+        try {
+          console.log(`Attempting to fetch data for ${monthString}`);
+          
+          // Build URLs for both total CPI and COICOP divisions
+          const totalParams = new URLSearchParams({
+            'lang': 'sv',
+            'valueCodes[ContentsCode]': '000004VV', // 12-month change
+            'valueCodes[Tid]': monthString
+          });
+          
+          const coicopParams = new URLSearchParams({
+            'lang': 'sv',
+            'valueCodes[ContentsCode]': '000002ZI', // Yearly change
+            'valueCodes[VaruTjanstegrupp]': '01,02,03,04,05,06,07,08,09,10,11,12',
+            'valueCodes[Tid]': monthString,
+            'codelist[VaruTjanstegrupp]': 'vs_VaruTjänstegrCoicopA'
+          });
+          
+          const totalUrl = `${this.totalCPIUrl}?${totalParams.toString()}`;
+          const coicopUrl = `${this.coicopUrl}?${coicopParams.toString()}`;
+          
+          const [totalResponse, coicopResponse] = await Promise.all([
+            fetch(`${proxyUrl}${encodeURIComponent(totalUrl)}`),
+            fetch(`${proxyUrl}${encodeURIComponent(coicopUrl)}`)
+          ]);
+          
+          if (totalResponse.ok && coicopResponse.ok) {
+            const [totalData, coicopData] = await Promise.all([
+              totalResponse.json(),
+              coicopResponse.json()
+            ]);
+            
+            console.log(`Successfully fetched data for ${monthString}`);
+            console.log('Total CPI Response:', totalData);
+            console.log('COICOP Response:', coicopData);
+            
+            const result = this.parseSCBV2Response(totalData, coicopData, attemptDate);
+            if (result && result.length > 0) {
+              return result;
+            }
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch data for ${monthString}:`, error);
+          continue; // Try next month
+        }
       }
-
-      const data = await response.json();
-      console.log('SCB API Response:', data);
       
-      return this.parseSCBV2Response(data);
+      return null; // All attempts failed
       
     } catch (error) {
       console.error('SCB API fetch failed:', error);
@@ -93,55 +128,49 @@ class SCBService {
     }
   }
 
-  private parseSCBV2Response(data: any): CPIData[] {
+  private parseSCBV2Response(totalData: any, coicopData: any, date: Date): CPIData[] {
     try {
-      // SCB v2beta API returns a different format
-      if (!data || !data.data) {
-        console.warn('No data found in SCB response');
-        return [];
+      // Parse total CPI
+      let totalCPI = 120.0; // fallback
+      if (totalData?.data?.[0]?.values?.[0]) {
+        totalCPI = parseFloat(totalData.data[0].values[0]);
       }
       
-      // Extract the data array
-      const responseData = data.data;
-      
-      if (!Array.isArray(responseData) || responseData.length === 0) {
-        console.warn('Invalid data format from SCB');
-        return [];
-      }
-      
-      // Build divisions object from the response
+      // Parse COICOP divisions
       const divisions: { [key: string]: number } = {};
       
-      // Map COICOP codes to division keys
-      const groupMapping: { [key: string]: string } = {
-        '01': 'D01_Food',
-        '02': 'D02_AlcoholTobacco', 
-        '03': 'D03_Clothing',
-        '04': 'D04_Housing',
-        '05': 'D05_Furnishings',
-        '06': 'D06_Health',
-        '07': 'D07_Transport',
-        '08': 'D08_InfoComm',
-        '09': 'D09_Recreation',
-        '10': 'D10_Education',
-        '11': 'D11_Restaurants',
-        '12': 'D12_InsuranceFinance'
-      };
-      
-      // Parse each data point
-      responseData.forEach((item: any) => {
-        if (item.key && item.values && item.values.length > 0) {
-          // Extract COICOP group from key
-          const groupMatch = item.key.find((k: string) => /^\d{2}$/.test(k));
-          if (groupMatch && groupMapping[groupMatch]) {
-            const divisionKey = groupMapping[groupMatch];
-            const value = parseFloat(item.values[0]);
-            if (!isNaN(value)) {
-              divisions[divisionKey] = value;
+      if (coicopData?.data && Array.isArray(coicopData.data)) {
+        // Map COICOP codes to division keys
+        const groupMapping: { [key: string]: string } = {
+          '01': 'D01_Food',
+          '02': 'D02_AlcoholTobacco', 
+          '03': 'D03_Clothing',
+          '04': 'D04_Housing',
+          '05': 'D05_Furnishings',
+          '06': 'D06_Health',
+          '07': 'D07_Transport',
+          '08': 'D08_InfoComm',
+          '09': 'D09_Recreation',
+          '10': 'D10_Education',
+          '11': 'D11_Restaurants',
+          '12': 'D12_InsuranceFinance'
+        };
+        
+        // Parse each data point
+        coicopData.data.forEach((item: any) => {
+          if (item.key && item.values && item.values.length > 0) {
+            // Extract COICOP group from key
+            const groupMatch = item.key.find((k: string) => /^\d{2}$/.test(k));
+            if (groupMatch && groupMapping[groupMatch]) {
+              const divisionKey = groupMapping[groupMatch];
+              const value = parseFloat(item.values[0]);
+              if (!isNaN(value)) {
+                divisions[divisionKey] = value;
+              }
             }
           }
-        }
-      });
+        });
+      }
       
       // Check if we have enough data
       if (Object.keys(divisions).length < 10) {
@@ -149,13 +178,12 @@ class SCBService {
         return [];
       }
       
-      // Calculate average as total CPI (approximation)
-      const avgValue = Object.values(divisions).reduce((sum, val) => sum + val, 0) / Object.values(divisions).length;
+      // Create CPIData entry
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
-      // Create CPIData entry for August 2025
       return [{
-        date: '2025-08',
-        CPI_All: avgValue,
+        date: dateString,
+        CPI_All: totalCPI,
         divisions
       }];
       

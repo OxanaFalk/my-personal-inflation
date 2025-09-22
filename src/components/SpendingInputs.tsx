@@ -31,9 +31,10 @@ interface SpendingInputsProps {
   mode: InputMode;
   onWeightsChange: (weights: SpendingWeights) => void;
   onModeChange: (mode: InputMode) => void;
+  divisionInflationRates?: { [division: string]: number | null };
 }
 
-const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: SpendingInputsProps) => {
+const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange, divisionInflationRates }: SpendingInputsProps) => {
   const [inputValues, setInputValues] = useState<SpendingWeights>(weights);
 
   // Update input values when mode changes (but not when weights change to avoid interference)
@@ -122,7 +123,7 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
       <TooltipProvider>
         <div className="grid gap-4 mb-6">
           {Object.entries(DIVISIONS).map(([divisionKey, division]) => (
-            <div key={divisionKey} className="flex items-center gap-4">
+            <div key={divisionKey} className="flex items-center gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Label htmlFor={divisionKey} className="text-sm font-medium">
@@ -137,6 +138,11 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                     </TooltipContent>
                   </Tooltip>
                 </div>
+                {divisionInflationRates && divisionInflationRates[divisionKey] !== undefined && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    12-month inflation: {divisionInflationRates[divisionKey] !== null ? `${divisionInflationRates[divisionKey]!.toFixed(1)}%` : 'N/A'}
+                  </div>
+                )}
               </div>
               <div className="w-24">
                 <Input

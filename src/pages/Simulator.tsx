@@ -12,7 +12,7 @@ import ShareLink from '@/components/ShareLink';
 
 import { scbService, SWEDEN_AVERAGE_WEIGHTS } from '@/services/scb';
 import { SpendingWeights, InputMode, normalizePercentageWeights } from '@/utils/weights';
-import { calculatePersonalCPI, getLatestInflationMetrics, formatPercentage, formatPercentagePoints } from '@/utils/inflation';
+import { calculatePersonalCPI, getLatestInflationMetrics, getDivisionYoYChanges, formatPercentage, formatPercentagePoints } from '@/utils/inflation';
 import type { CPIData } from '@/services/scb';
 
 const Simulator = () => {
@@ -79,6 +79,12 @@ const Simulator = () => {
     return getLatestInflationMetrics(inflationResults);
   }, [inflationResults]);
 
+  // Calculate division YoY changes for display in SpendingInputs
+  const divisionInflationRates = useMemo(() => {
+    if (cpiData.length === 0) return {};
+    return getDivisionYoYChanges(cpiData);
+  }, [cpiData]);
+
   const handleWeightsChange = (newWeights: SpendingWeights) => {
     setWeights(newWeights);
   };
@@ -137,6 +143,7 @@ const Simulator = () => {
               mode={mode}
               onWeightsChange={handleWeightsChange}
               onModeChange={setMode}
+              divisionInflationRates={divisionInflationRates}
             />
           </div>
 
