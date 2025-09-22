@@ -12,7 +12,7 @@ import ShareLink from '@/components/ShareLink';
 
 import { scbService, SWEDEN_AVERAGE_WEIGHTS } from '@/services/scb';
 import { SpendingWeights, InputMode, normalizePercentageWeights } from '@/utils/weights';
-import { calculatePersonalCPI, getLatestInflationMetrics, getDivisionYoYChanges, formatPercentage, formatPercentagePoints } from '@/utils/inflation';
+import { calculatePersonalCPI, getLatestInflationMetrics, formatPercentage, formatPercentagePoints } from '@/utils/inflation';
 import type { CPIData } from '@/services/scb';
 
 const Simulator = () => {

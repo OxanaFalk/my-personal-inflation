@@ -48,14 +48,18 @@ class SCBService {
       // Try to fetch from SCB API first
       const response = await this.fetchFromSCB();
       if (response) {
+        console.log('Successfully loaded SCB API data:', response.length, 'records');
         return { data: response, isDemo: false };
       }
     } catch (error) {
       console.warn('Failed to fetch from SCB API, using fallback data:', error);
     }
     
+    console.log('Using fallback CSV data...');
     // Fallback to embedded CSV data
-    return { data: await this.loadFallbackData(), isDemo: true };
+    const fallbackData = await this.loadFallbackData();
+    console.log('Loaded fallback data:', fallbackData.length, 'records');
+    return { data: fallbackData, isDemo: true };
   }
 
   private async fetchFromSCB(): Promise<CPIData[] | null> {
