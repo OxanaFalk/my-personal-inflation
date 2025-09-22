@@ -28,7 +28,7 @@ const About = () => {
             <p className="text-muted-foreground mb-4">
               Myflation uses official Consumer Price Index (CPI) data from Statistics Sweden (SCB), 
               specifically the COICOP classification with 2020 as the base year (2020=100). The data 
-              covers the last 24 months across all 13 main expenditure divisions.
+              covers the last 12 months across all 13 main expenditure divisions.
             </p>
             <p className="text-muted-foreground">
               Data is fetched from SCB's PXWeb API (dataset: KPI2020COICOP2M) with a fallback to 
