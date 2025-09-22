@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,17 +19,10 @@ interface SpendingInputsProps {
 const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: SpendingInputsProps) => {
   const [inputValues, setInputValues] = useState<SpendingWeights>(weights);
 
-  // Sync inputValues with weights prop changes
-  useEffect(() => {
-    setInputValues(weights);
-  }, [weights]);
-
   const handleInputChange = (divisionKey: string, value: string) => {
     const numericValue = parseFloat(value) || 0;
     const newValues = { ...inputValues, [divisionKey]: numericValue };
     setInputValues(newValues);
-    
-    console.log('Input changed:', divisionKey, numericValue, newValues); // Debug log
     
     // Convert to percentages and update parent
     if (mode === 'percentage') {
@@ -85,7 +78,7 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help flex-shrink-0" />
+                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-64">
                       <p className="text-xs">{division.description}</p>
@@ -103,15 +96,11 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                   value={inputValues[divisionKey] || ''}
                   onChange={(e) => handleInputChange(divisionKey, e.target.value)}
                   placeholder="0"
-                  className="text-right [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                  className="text-right"
                 />
               </div>
-              <div className="w-16 text-sm text-muted-foreground text-right">
-                {mode === 'percentage' ? (
-                  <span className="flex items-center justify-end gap-1">
-                    % <span className="text-xs opacity-60">({SWEDEN_AVERAGE_WEIGHTS[divisionKey as keyof typeof SWEDEN_AVERAGE_WEIGHTS]?.toFixed(1)})</span>
-                  </span>
-                ) : 'SEK'}
+              <div className="w-12 text-sm text-muted-foreground text-right">
+                {mode === 'percentage' ? '%' : 'SEK'}
               </div>
             </div>
           ))}

@@ -19,16 +19,12 @@ export function calculatePersonalCPI(
 ): InflationResult[] {
   const decimalWeights = percentageToDecimalWeights(percentageWeights);
   
-  console.log('Calculating with weights:', percentageWeights); // Debug log
-  console.log('CPI data:', cpiData[0]); // Debug log
-  
   return cpiData.map(dataPoint => {
     // Calculate weighted personal inflation rate directly from the inflation data
     let personalYoY = 0;
     Object.entries(decimalWeights).forEach(([division, weight]) => {
       const inflationRate = dataPoint.divisions[division] || 0; // Use inflation rate directly
       personalYoY += weight * inflationRate;
-      console.log(`Division ${division}: weight=${weight}, rate=${inflationRate}, contribution=${weight * inflationRate}`); // Debug log
     });
 
     // Swedish YoY is already provided in the CPI_All column as inflation rate
