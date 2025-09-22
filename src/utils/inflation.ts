@@ -19,59 +19,51 @@ export function calculatePersonalCPI(
 ): InflationResult[] {
   const decimalWeights = percentageToDecimalWeights(percentageWeights);
   
-  console.log('Calculating with weights:', percentageWeights); // Debug log
-  console.log('CPI data:', cpiData[0]); // Debug log
+  console.log('User weights (will be applied to ALL months):', percentageWeights);
+  console.log('Decimal weights:', decimalWeights);
   
   return cpiData.map((dataPoint, index) => {
-    // Calculate weighted personal inflation rate directly from the inflation data
+    // Calculate weighted personal inflation rate using USER'S WEIGHTS (same for all months)
     let personalYoY = 0;
     
-    if (index === 0) {
-      console.log(`=== DEBUGGING FOR ${dataPoint.date} ===`);
-      console.log('Available divisions in data:', Object.keys(dataPoint.divisions));
-      console.log('Weight divisions:', Object.keys(decimalWeights));
-      console.log('Sweden CPI All:', dataPoint.CPI_All);
-    }
+    // Map division keys to CSV headers
+    const divisionMapping: { [key: string]: string } = {
+      '01_Food': 'D01_Food',
+      '02_AlcoholTobacco': 'D02_AlcoholTobacco', 
+      '03_Clothing': 'D03_Clothing',
+      '04_Housing': 'D04_Housing',
+      '05_Furnishings': 'D05_Furnishings',
+      '06_Health': 'D06_Health',
+      '07_Transport': 'D07_Transport',
+      '08_Communication': 'D08_InfoComm',
+      '09_Recreation': 'D09_Recreation',
+      '10_Education': 'D10_Education',
+      '11_RestaurantsHotels': 'D11_Restaurants',
+      '12_Misc': 'D12_InsuranceFinance'
+    };
     
     Object.entries(decimalWeights).forEach(([division, weight]) => {
-      // Map division keys to CSV headers
-      const divisionMapping: { [key: string]: string } = {
-        '01_Food': 'D01_Food',
-        '02_AlcoholTobacco': 'D02_AlcoholTobacco', 
-        '03_Clothing': 'D03_Clothing',
-        '04_Housing': 'D04_Housing',
-        '05_Furnishings': 'D05_Furnishings',
-        '06_Health': 'D06_Health',
-        '07_Transport': 'D07_Transport',
-        '08_Communication': 'D08_InfoComm',
-        '09_Recreation': 'D09_Recreation',
-        '10_Education': 'D10_Education',
-        '11_RestaurantsHotels': 'D11_Restaurants',
-        '12_Misc': 'D12_InsuranceFinance'
-      };
-      
       const csvHeader = divisionMapping[division];
       const inflationRate = dataPoint.divisions[csvHeader] || 0;
       personalYoY += weight * inflationRate;
       
       if (index === 0) {
-        console.log(`${division} -> ${csvHeader}: weight=${weight.toFixed(4)}, rate=${inflationRate}, contribution=${(weight * inflationRate).toFixed(4)}`);
+        console.log(`${division} -> ${csvHeader}: weight=${weight.toFixed(4)}, rate=${inflationRate}%, contribution=${(weight * inflationRate).toFixed(4)}%`);
       }
     });
 
     if (index === 0) {
-      console.log(`Total Personal YoY: ${personalYoY.toFixed(4)}, Sweden CPI: ${dataPoint.CPI_All}`);
-      console.log('=== END DEBUG ===');
+      console.log(`${dataPoint.date}: Personal=${personalYoY.toFixed(2)}%, Swedish=${dataPoint.CPI_All}%`);
     }
 
-    // Swedish YoY is already provided in the CPI_All column as inflation rate
+    // Swedish YoY is the official CPI for that month
     const swedishYoY = dataPoint.CPI_All;
     const difference = personalYoY - swedishYoY;
 
     return {
       date: dataPoint.date,
-      personalCPI: 100, // Not needed since we work with rates directly
-      swedishCPI: 100, // Not needed since we work with rates directly
+      personalCPI: 100,
+      swedishCPI: 100,
       personalYoY,
       swedishYoY,
       difference
