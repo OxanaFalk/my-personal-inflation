@@ -171,7 +171,7 @@ class SCBService {
     console.log('CSV headers:', headers);
     console.log('CSV lines count:', lines.length);
     
-    const result = lines.slice(1).map(line => {
+    const result = lines.slice(1).map((line, index) => {
       const values = line.split(',');
       const divisions: { [key: string]: number } = {};
       
@@ -179,15 +179,28 @@ class SCBService {
       const dateStr = values[0].trim(); // Keep original format like "2024M09"
       const cpiTotal = parseFloat(values[1]);
       
+      console.log(`Line ${index + 1}: date=${dateStr}, CPI_All=${cpiTotal}, values count=${values.length}`);
+      
       // Extract division inflation rates (columns 2-13)
-      const divisionHeaders = headers.slice(2, 14); // Only inflation columns, not weights
-      divisionHeaders.forEach((header, index) => {
-        const value = parseFloat(values[index + 2]);
-        divisions[header.trim()] = value;
+      const divisionHeaders = headers.slice(2); // Get all headers from column 2 onwards
+      divisionHeaders.forEach((header, headerIndex) => {
+        const valueIndex = headerIndex + 2; // Column index in values array
+        const rawValue = values[valueIndex];
+        const parsedValue = parseFloat(rawValue);
+        
+        if (index === 0) { // Log first row for debugging
+          console.log(`  ${header.trim()} (col ${valueIndex}): raw="${rawValue}" -> parsed=${parsedValue}`);
+        }
+        
+        divisions[header.trim()] = isNaN(parsedValue) ? 0 : parsedValue;
       });
       
+      if (index === 0) {
+        console.log('First row divisions:', divisions);
+      }
+      
       return {
-        date: dateStr, // Keep original "2024M09" format
+        date: dateStr,
         CPI_All: cpiTotal,
         divisions
       };
