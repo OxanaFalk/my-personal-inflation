@@ -89,7 +89,7 @@ const InflationChart = ({ data, isDemo }: InflationChartProps) => {
         </div>
         
         <div className="mt-4 text-sm text-muted-foreground">
-          Data source: SCB (COICOP 2020=100) • Last 24 months
+          Data source: <a href="https://www.scb.se/" target="_blank" rel="noopener noreferrer" className="hover:underline">SCB (Statistics Sweden)</a>
         </div>
       </div>
     </div>
