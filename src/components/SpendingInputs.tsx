@@ -29,6 +29,8 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
     const newValues = { ...inputValues, [divisionKey]: numericValue };
     setInputValues(newValues);
     
+    console.log('Input changed:', divisionKey, numericValue, newValues); // Debug log
+    
     // Convert to percentages and update parent
     if (mode === 'percentage') {
       onWeightsChange(newValues);
