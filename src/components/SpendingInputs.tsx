@@ -36,7 +36,7 @@ interface SpendingInputsProps {
 const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: SpendingInputsProps) => {
   const [inputValues, setInputValues] = useState<SpendingWeights>(weights);
 
-  // Update input values when weights or mode changes
+  // Update input values when mode changes (but not when weights change to avoid interference)
   useEffect(() => {
     if (mode === 'percentage') {
       // Show the actual percentage weights
@@ -50,7 +50,12 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
       });
       setInputValues(sekValues);
     }
-  }, [weights, mode]);
+  }, [mode]); // Only depend on mode, not weights
+
+  // Initialize input values on first load
+  useEffect(() => {
+    setInputValues(weights);
+  }, []);
 
   const handleModeChange = (newMode: InputMode) => {
     onModeChange(newMode);
@@ -72,7 +77,17 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
 
   const handleResetToSweden = () => {
     const swedenWeights = { ...SWEDEN_AVERAGE_WEIGHTS };
-    setInputValues(swedenWeights);
+    if (mode === 'percentage') {
+      setInputValues(swedenWeights);
+    } else {
+      // Convert to SEK amounts
+      const totalMonthlySpending = 10000;
+      const sekValues: SpendingWeights = {};
+      Object.entries(swedenWeights).forEach(([key, percentage]) => {
+        sekValues[key] = (percentage / 100) * totalMonthlySpending;
+      });
+      setInputValues(sekValues);
+    }
     onWeightsChange(swedenWeights);
   };
 
@@ -115,7 +130,7 @@ const SpendingInputs = ({ weights, mode, onWeightsChange, onModeChange }: Spendi
                   </Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground cursor-help flex-shrink-0" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
                       <p className="text-sm">{DIVISION_EXPLANATIONS[divisionKey as keyof typeof DIVISION_EXPLANATIONS]}</p>
