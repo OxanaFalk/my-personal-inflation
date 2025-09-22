@@ -70,69 +70,6 @@ const About = () => {
             </p>
           </div>
 
-          <div className="bg-card p-6 rounded-xl shadow-soft border border-border mb-8">
-            <h2 className="text-2xl font-semibold mb-4">COICOP Groups</h2>
-            <div className="grid gap-2 text-sm">
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">01</span>
-                <span className="text-muted-foreground">Food and non-alcoholic beverages</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">02</span>
-                <span className="text-muted-foreground">Alcoholic beverages, tobacco and narcotics</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">03</span>
-                <span className="text-muted-foreground">Clothing and footwear</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">04</span>
-                <span className="text-muted-foreground">Housing, water, electricity, gas and other fuels</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">05</span>
-                <span className="text-muted-foreground">Furnishings, household equipment and routine household maintenance</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">06</span>
-                <span className="text-muted-foreground">Health</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">07</span>
-                <span className="text-muted-foreground">Transport</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">08</span>
-                <span className="text-muted-foreground">Information and communication</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">09</span>
-                <span className="text-muted-foreground">Recreation, sport and culture</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">10</span>
-                <span className="text-muted-foreground">Education services</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border/50">
-                <span className="font-medium">11</span>
-                <span className="text-muted-foreground">Restaurants and accommodation services</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="font-medium">12</span>
-                <span className="text-muted-foreground">Miscellaneous goods and services</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card p-6 rounded-xl shadow-soft border border-border mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Limitations</h2>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>• This is a simplified reweighting model for demonstration purposes</li>
-              <li>• SCB figures reflect average price movements, not specific items you buy</li>
-              <li>• Quality changes, substitution effects, and regional price differences are not captured</li>
-              <li>• The model assumes constant spending patterns over time</li>
-            </ul>
-          </div>
 
           <div className="bg-card p-6 rounded-xl shadow-soft border border-border mb-8">
             <h2 className="text-2xl font-semibold mb-4">Disclaimer</h2>
