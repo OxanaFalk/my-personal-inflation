@@ -41,18 +41,18 @@ export function calculatePersonalCPI(
     
     // Map division keys to CSV headers
     const divisionMapping: { [key: string]: string } = {
-      '01_Food': 'D01_Food',
-      '02_AlcoholTobacco': 'D02_AlcoholTobacco', 
-      '03_Clothing': 'D03_Clothing',
-      '04_Housing': 'D04_Housing',
-      '05_Furnishings': 'D05_Furnishings',
-      '06_Health': 'D06_Health',
-      '07_Transport': 'D07_Transport',
-      '08_Communication': 'D08_InfoComm',
-      '09_Recreation': 'D09_Recreation',
-      '10_Education': 'D10_Education',
-      '11_RestaurantsHotels': 'D11_Restaurants',
-      '12_Misc': 'D12_InsuranceFinance'
+      '01_Food': '01_Food',
+      '02_AlcoholTobacco': '02_AlcoholTobacco', 
+      '03_Clothing': '03_Clothing',
+      '04_Housing': '04_Housing',
+      '05_Furnishings': '05_Furnishings',
+      '06_Health': '06_Health',
+      '07_Transport': '07_Transport',
+      '08_Communication': '08_Communication',
+      '09_Recreation': '09_Recreation',
+      '10_Education': '10_Education',
+      '11_RestaurantsHotels': '11_RestaurantsHotels',
+      '12_Misc': '12_Misc'
     };
     
     Object.entries(decimalWeights).forEach(([division, weight]) => {
