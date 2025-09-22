@@ -73,17 +73,17 @@ export const DIVISIONS = {
 
 // Swedish average spending weights from CSV data (converted from decimals to percentages)
 export const SWEDEN_AVERAGE_WEIGHTS = {
-  '01_Food': 13.4,
+  '01_Food': 13.9,
   '02_AlcoholTobacco': 3.2,
-  '03_Clothing': 4.2,
-  '04_Housing': 25.3,
-  '05_Furnishings': 6.2,
-  '06_Health': 3.2,
+  '03_Clothing': 4.5,
+  '04_Housing': 25.1,
+  '05_Furnishings': 5.8,
+  '06_Health': 3.1,
   '07_Transport': 13.2,
-  '08_Communication': 3.2,
-  '09_Recreation': 12.7,
-  '10_Education': 0.4,
-  '11_RestaurantsHotels': 7.9,
+  '08_Communication': 2.8,
+  '09_Recreation': 12.4,
+  '10_Education': 0.3,
+  '11_RestaurantsHotels': 8.6,
   '12_Misc': 7.1,
 };
 
@@ -169,7 +169,7 @@ class SCBService {
       const divisions: { [key: string]: number } = {};
       
       // Parse date and CPI_Total
-      const dateStr = values[0].trim();
+      const dateStr = values[0].trim(); // Keep original format like "2024M09"
       const cpiTotal = parseFloat(values[1]);
       
       // Extract division inflation rates (columns 2-13)
@@ -179,14 +179,8 @@ class SCBService {
         divisions[header.trim()] = value;
       });
       
-      // Convert date format from 2024M09 to readable format
-      const [year, month] = dateStr.split('M');
-      const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const formattedDate = `${year}-${month.padStart(2, '0')}`;
-      
       return {
-        date: formattedDate,
+        date: dateStr, // Keep original "2024M09" format
         CPI_All: cpiTotal,
         divisions
       };
